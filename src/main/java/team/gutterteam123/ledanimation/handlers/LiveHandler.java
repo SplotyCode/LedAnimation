@@ -26,6 +26,8 @@ public class LiveHandler {
         content.manipulate().variable("master", LedHandler.getInstance().getMaster());
         content.manipulate().variable("mute_status", LedHandler.getInstance().isMute() ? "danger" : "secondary");
         content.manipulate().variable("mute_icon", LedHandler.getInstance().isMute() ? "power-off" : "lightbulb");
+        content.manipulate().variable("autocommit_status", LedHandler.getInstance().isAutoCommit() ? "secondary" : "danger");
+        content.manipulate().variable("autocommit_icon", LedHandler.getInstance().isAutoCommit() ? "sync" : "exclamation-circle");
 
         Iterable<Scene> scenes = Scene.FILE_SYSTEM.getEntries().stream().filter(Scene::isVisible).collect(Collectors.toList());
         content.manipulate().patternListName("form_scene", scenes);
@@ -91,6 +93,12 @@ public class LiveHandler {
     @Mapping("liveaction/togglemute")
     public void toggleMute(Response response) {
         LedHandler.getInstance().toogleMute();
+        response.redirect("/live", false);
+    }
+
+    @Mapping("liveaction/toggleautocommit")
+    public void toggleAutoCommit(Response response) {
+        LedHandler.getInstance().toogleAutoCimmit();
         response.redirect("/live", false);
     }
 

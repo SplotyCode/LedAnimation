@@ -8,7 +8,6 @@
     </JAVADOC>
     <SOURCES>
       <root url="jar://$MAVEN_REPOSITORY$/io/github/splotycode/mosaik/Mosaik-All/2.3-Dev/Mosaik-All-2.3-Dev-sources.jar!/" />
-      <root url="jar://$MAVEN_REPOSITORY$/io/github/splotycode/mosaik/Mosaik-All/2.3-Dev/Mosaik-All-2.3-Dev.jar!/" />
     </SOURCES>
   </library>
 </component>

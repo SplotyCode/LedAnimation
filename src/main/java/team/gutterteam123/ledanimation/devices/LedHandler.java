@@ -27,7 +27,7 @@ public class LedHandler {
     private final OlaClient olaClient;
     private Lock lock = new ReentrantLock();
     @Getter private short master;
-    @Getter private boolean mute;
+    @Getter private boolean mute, autoCommit = true;
 
     public LedHandler() throws Exception {
         instance = this;
@@ -58,6 +58,18 @@ public class LedHandler {
         }
     }
 
+    public void toogleAutoCimmit() {
+        lock.lock();
+        try {
+            autoCommit = !autoCommit;
+            if (autoCommit) {
+                refresh0();
+            }
+        } finally {
+            lock.unlock();
+        }
+    }
+
     public void toogleMute() {
         lock.lock();
         try {
@@ -78,6 +90,9 @@ public class LedHandler {
     }
 
     private void refresh0() {
+        if (!autoCommit) {
+            return;
+        }
         if (loadError != null) {
             throw new HandleRequestException("Controller connection was not established", loadError);
         }

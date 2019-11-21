@@ -42,8 +42,7 @@ public class AnimationHandler {
         ManipulateableContent content = new FileResponseContent("web/editanimation.html");
         content.manipulate().variable("name", name);
         Animation a = Animation.FILE_SYSTEM.getEntry(name);
-        content.manipulate().variable("End", a.getEnd());
-        content.manipulate().variable("fps", a.getFps());
+        //content.manipulate().variable("end", a.getEnd());
         return content;
     }
 
@@ -56,7 +55,6 @@ public class AnimationHandler {
         int end = jsonObject.getJSONObject("Animation").getInt("end");
         String name = jsonObject.getJSONObject("Animation").getString("name");
         Animation animation = new Animation(name);
-        animation.setFps(fps);
         animation.setEnd(end);
         Animation.FILE_SYSTEM.putEntry(name,animation);
         response.redirect("/animation" + name, false);

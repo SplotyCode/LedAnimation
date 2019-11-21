@@ -31,7 +31,7 @@ public final class AnimationExecutor {
                     }
                 }
                 context.next();
-                long toSleep = 1000 / context.getAnimation().getFps();
+                long toSleep = 1000 / 20;
                 long delay = System.currentTimeMillis() - start;
                 ThreadUtil.sleep(Math.max(0, toSleep - delay));
             }

@@ -23,7 +23,6 @@ public class Animation implements Serializable {
 
     public static final FileSystem<Animation> FILE_SYSTEM = LinkBase.getInstance().getLink(Links.PARSING_FILEPROVIDER).provide("animation", new SerialisedEntryParser());
 
-    private int fps;
     private int end;
 
     private String name;
