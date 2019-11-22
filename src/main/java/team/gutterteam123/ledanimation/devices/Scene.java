@@ -9,10 +9,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Getter
 public class Scene implements Serializable  {
@@ -20,6 +17,18 @@ public class Scene implements Serializable  {
     private static final long serialVersionUID = 1L;
 
     public static final FileSystem<Scene> FILE_SYSTEM = LinkBase.getInstance().getLink(Links.PARSING_FILEPROVIDER).provide("scenes", new SerialisedEntryParser());
+
+    public static Scene saveCurrent(String name) {
+        Map<String, Map<ChannelType, Short>> values = new HashMap<>();
+        for (Controllable controllable : Controllable.FILE_SYSTEM.getEntries()) {
+            Map<ChannelType, Short> channels = new HashMap<>();
+            for (ChannelType channel : controllable.getChannels()) {
+                channels.put(channel, controllable.getValue(channel).getValue());
+            }
+            values.put(controllable.displayName(), channels);
+        }
+        return new Scene(name, values);
+    }
 
     private String name;
     private Map<String, Map<ChannelType, Short>> values;

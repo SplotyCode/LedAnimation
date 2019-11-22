@@ -28,11 +28,11 @@ public class RoutingHandler {
     public void setUp() {
         List<String> views = new ArrayList<>();
 
-        for (File file : new File("web/views/").listFiles()) {
+        for (File file : new File(LedAnimation.WEB_PATH, "views/").listFiles()) {
             views.add(PathUtil.getFileNameWithoutEx(file));
         }
 
-        register(new StaticFileSystemHandler(new File("web/static"), "static"));
+        register(new StaticFileSystemHandler(new File(LedAnimation.WEB_PATH, "static"), "static"));
         register(RedirectHandler.createSimple(true, "/", "/device"));
         register(new HttpHandler() {
 
@@ -44,7 +44,7 @@ public class RoutingHandler {
 
             @Override
             public boolean handle(Request request) throws HandleRequestException {
-                ManipulateableContent content = new CachedFileResponseContent("web/base.html");
+                ManipulateableContent content = new CachedFileResponseContent(new File(LedAnimation.WEB_PATH, "base.html"));
                 content.manipulate().variable("user", ((LedSession) request.getSession()).getAccount().getName());
                 request.getResponse().setContent(content);
                 return false;

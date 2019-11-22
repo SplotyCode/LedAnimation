@@ -13,6 +13,13 @@ public class SetValueKeyFrame extends KeyFrame {
     private String deviceName;
     private ChannelType channel;
 
+    public SetValueKeyFrame(String name, short start, short end, short value, int layer, String deviceName, ChannelType channel) {
+        super(name, start, end, layer);
+        this.value = value;
+        this.deviceName = deviceName;
+        this.channel = channel;
+    }
+
     @Override
     public void executeAction(ExecutionContext context) {
         context.putData(DEVICE, Controllable.FILE_SYSTEM.getEntry(deviceName));

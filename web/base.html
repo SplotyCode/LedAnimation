@@ -65,14 +65,19 @@
             history.pushState({current_page:url, previous_page:window.location.href.split('/').pop()}, window.document.title, url);
             $(".navbar-nav li").removeClass("active");
             $("." + url).addClass("active");
+            //$("#main").changeElementType("iFrame");
+            //$("#main").attr('src', "/views/" + url");
+
             $.ajax({
               cache: false,
               url: "/views/" + url,
-              success: function(response){
+              success: function(response) {
                 if (response.includes("<title>Login</title>")) {
                     window.location.reload(true);
                 } else {
-                    $("#main").html(response);
+                    //$("#main").html(response);
+                    $("#main").changeElementType("iFrame");
+                    $('#main').contents().find('html').html(response);
                 }
               },
               error: function(xhr, textStatus, errorThrown){

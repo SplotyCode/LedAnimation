@@ -9,6 +9,7 @@ import io.github.splotycode.mosaik.webapi.response.URLEncode;
 import io.github.splotycode.mosaik.webapi.response.content.ResponseContent;
 import io.github.splotycode.mosaik.webapi.response.content.file.FileResponseContent;
 import lombok.AllArgsConstructor;
+import team.gutterteam123.ledanimation.LedAnimation;
 import team.gutterteam123.ledanimation.devices.ChannelType;
 import team.gutterteam123.ledanimation.devices.Controllable;
 import team.gutterteam123.ledanimation.devices.Device;
@@ -27,7 +28,7 @@ public class DeviceHandler  {
 
     @Mapping("views/device")
     public ResponseContent view() {
-        FileResponseContent content = new FileResponseContent(new File("web/views/device.html"));
+        FileResponseContent content = new FileResponseContent(new File(LedAnimation.WEB_PATH, "views/device.html"));
         for (Controllable controllable : Controllable.FILE_SYSTEM.getEntries()) {
             content.manipulate().patternCostomWithObj("devices", controllable,
                     new Pair<>("visible-status", controllable.isVisible() ? "primary" : "secondary"),
@@ -75,7 +76,7 @@ public class DeviceHandler  {
         if (controllable instanceof DeviceGroup) {
             DeviceGroup group = (DeviceGroup) controllable;
 
-            FileResponseContent content = new FileResponseContent("web/settings_group.html");
+            FileResponseContent content = new FileResponseContent(new File(LedAnimation.WEB_PATH, "settings_group.html"));
 
             for (Device child : group.getDevices()) {
                 content.manipulate().patternCostomWithObj("linked", child, new Pair<>("device", group.displayName()));
@@ -92,7 +93,7 @@ public class DeviceHandler  {
             return content;
         } else {
             Device device = (Device) controllable;
-            FileResponseContent content = new FileResponseContent("web/settings_device.html");
+            FileResponseContent content = new FileResponseContent(new File(LedAnimation.WEB_PATH, "settings_device.html"));
             for (Map.Entry<ChannelType, Integer> entry : device.getChannelMap().entrySet()) {
                 content.manipulate().patternCostomName("used_channels",
                         new Pair<>("type", entry.getKey().displayName()),

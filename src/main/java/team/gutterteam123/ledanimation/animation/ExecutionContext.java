@@ -4,6 +4,7 @@ import io.github.splotycode.mosaik.util.datafactory.DataFactory;
 import io.github.splotycode.mosaik.util.datafactory.DataKey;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import team.gutterteam123.ledanimation.devices.Scene;
 
 import java.util.HashMap;
 
@@ -16,6 +17,7 @@ public class ExecutionContext {
         this.animation = animation;
     }
 
+    @Getter Scene start;
     private short currentFrame;
     private int currentKeyFrame;
     private HashMap<Integer, DataFactory> data = new HashMap<>();
@@ -42,6 +44,10 @@ public class ExecutionContext {
 
     public short position() {
         return currentFrame;
+    }
+
+    public float percentageDone() {
+        return currentFrame / (float) animation.getEnd();
     }
 
 }

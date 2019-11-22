@@ -24,7 +24,7 @@ public class UserHandler {
     @Mapping("login")
     public ResponseContent login(Request request, Response response) {
         if (request.getSession() == null) {
-            return new CachedStaticFileContent("web/static/login.html");
+            return new CachedStaticFileContent(new File(LedAnimation.WEB_PATH, "static/login.html"));
         } else {
             response.redirect("/", false);
             return null;
@@ -65,7 +65,7 @@ public class UserHandler {
     @Mapping("views/user")
     @NeedPermission
     public ResponseContent view() {
-        FileResponseContent content = new FileResponseContent(new File("web/views/user.html"));
+        FileResponseContent content = new FileResponseContent(new File(LedAnimation.WEB_PATH, "views/user.html"));
         for (Account account : Account.FILE_SYSTEM.getEntries()) {
             content.manipulate().patternCostomWithObj("users", account,
                     new Pair<>("permission", account.isAdmin() ? "Admin" : "Dummy"));
@@ -73,9 +73,9 @@ public class UserHandler {
         return content;
     }
 
-    @Mapping(value = "users/create")
+    @Mapping("users/create")
     @NeedPermission("create")
-    public void create(@RequiredGet(value = "name") String name,
+    public void create(@RequiredGet("name") String name,
                        @RequiredGet("password") String password,
                        @Get("permission") String permission, Response response) {
         Account account = new Account(name, "on".equals(permission));
@@ -85,8 +85,8 @@ public class UserHandler {
     }
 
     @NeedPermission("delete")
-    @Mapping(value = "users/delete")
-    public void delete(@RequiredGet(value = "name") String name, Response response) {
+    @Mapping("users/delete")
+    public void delete(@RequiredGet("name") String name, Response response) {
         Account.FILE_SYSTEM.deleteEntry(name);
         response.redirect("/user", false);
     }

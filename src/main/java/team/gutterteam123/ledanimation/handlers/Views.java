@@ -21,7 +21,7 @@ public class Views {
 
     //@Mapping("/device")
     public ResponseContent device() {
-        FileResponseContent content = new FileResponseContent(new File("web/devices.html"));
+        FileResponseContent content = new FileResponseContent(new File(LedAnimation.WEB_PATH, "devices.html"));
         for (Controllable controllable : Controllable.FILE_SYSTEM.getEntries()) {
             content.manipulate().patternCostomWithObj("devices", controllable, new Pair<>("visible-status", controllable.isVisible() ? "primary" : "secondary"));
         }
@@ -30,7 +30,7 @@ public class Views {
 
     //@Mapping("/scene")
     public ResponseContent scene() {
-        FileResponseContent content = new FileResponseContent(new File("web/scene.html"));
+        FileResponseContent content = new FileResponseContent(new File(LedAnimation.WEB_PATH, "scene.html"));
         for (Scene controllable : Scene.FILE_SYSTEM.getEntries()) {
             content.manipulate().patternCostomWithObj("scenes", controllable);
         }
@@ -39,7 +39,7 @@ public class Views {
 
     //@Mapping("/login")
     public ResponseContent login() {
-        return new FileResponseContent(new File("web/static/login.html"));
+        return new FileResponseContent(new File(LedAnimation.WEB_PATH, "static/login.html"));
     }
 
     @Mapping("/")
@@ -49,14 +49,14 @@ public class Views {
 
     //@Mapping("/animation")
     public ResponseContent AnimationOverview(){
-        FileResponseContent content = new FileResponseContent(new File("web/AnimationOverview.html"));
+        FileResponseContent content = new FileResponseContent(new File(LedAnimation.WEB_PATH, "AnimationOverview.html"));
         content.manipulate().pattern("animation", Controllable.FILE_SYSTEM.getEntries());
         return content;
     }
 
     //@Mapping("/live")
     public ResponseContent live(){
-        FileResponseContent content = new FileResponseContent(new File("web/live.html"));
+        FileResponseContent content = new FileResponseContent(new File(LedAnimation.WEB_PATH, "live.html"));
         content.manipulate().variable("master", LedHandler.getInstance().getMaster());
         content.manipulate().pattern(PatternCommand.create("devices").createSecondaries(device -> {
             PatternCommand colorCommand = device.getTwo().createChild("color");

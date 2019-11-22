@@ -2,6 +2,7 @@ package team.gutterteam123.ledanimation;
 
 import io.github.splotycode.mosaik.runtime.LinkBase;
 import io.github.splotycode.mosaik.runtime.application.Application;
+import io.github.splotycode.mosaik.runtime.pathmanager.PathManager;
 import io.github.splotycode.mosaik.runtime.startup.BootContext;
 import io.github.splotycode.mosaik.valuetransformer.TransformerManager;
 import io.github.splotycode.mosaik.webapi.WebApplicationType;
@@ -23,8 +24,12 @@ import team.gutterteam123.ledanimation.user.Account;
 import team.gutterteam123.ledanimation.user.LedSession;
 import team.gutterteam123.ledanimation.user.PasswordCryptor;
 
+import java.io.File;
+
 @Getter
 public class LedAnimation extends Application implements WebApplicationType {
+
+    public static final File WEB_PATH = false ? new File("web") : new File(PathManager.getInstance().getMainDirectory(), "web/");
 
     public static LedAnimation getInstance() {
         return LinkBase.getApplicationManager().getApplicationByClass(LedAnimation.class);

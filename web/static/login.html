@@ -94,9 +94,10 @@
     </div>
     <script src="/static/3party/jquery.js"></script>
     <script src="/static/3party/popper.js"></script>
-    <script src="/static/3party/bootstrap/js/bootstrap.min.js"></script></body>
+    <script src="/static/3party/bootstrap/js/bootstrap.min.js"></script><
+    <script src="/static/util.js"></script>
     <script>
-        $.urlParam = function(name){
+        $.urlParam = function(name) {
             var results = new RegExp('[\?&]' + name + '=([^&#]*)').exec(window.location.href);
             if (results==null){
                 return null;
@@ -104,6 +105,10 @@
                 return decodeURIComponent(results[1] || 0);
             }
         }
-        $('#login-form').append('<input type="hidden" name="redirect" value="' + $.urlParam('last') + '">');
+        var last = $.urlParam('last');
+        if (!isEmpty(last)) {
+            $('#login-form').append('<input type="hidden" name="redirect" value="' + $.urlParam('last') + '">');
+        }
     </script>
+</body>
 </html>

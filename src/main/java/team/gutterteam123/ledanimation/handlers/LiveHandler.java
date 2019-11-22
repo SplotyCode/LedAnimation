@@ -11,6 +11,7 @@ import io.github.splotycode.mosaik.webapi.response.content.file.FileResponseCont
 import io.github.splotycode.mosaik.webapi.response.content.manipulate.pattern.PatternCommand;
 import io.github.splotycode.mosaik.webapi.server.netty.NettyRequest;
 import io.netty.channel.ChannelHandlerContext;
+import team.gutterteam123.ledanimation.LedAnimation;
 import team.gutterteam123.ledanimation.devices.*;
 
 import java.io.File;
@@ -21,7 +22,7 @@ public class LiveHandler {
 
     @Mapping("views/live")
     public ResponseContent view(Request request) {
-        FileResponseContent content = new FileResponseContent(new File("web/views/live.html"));
+        FileResponseContent content = new FileResponseContent(new File(LedAnimation.WEB_PATH, "views/live.html"));
         content.manipulate().variable("host", request.getHeader("Host"));
         content.manipulate().variable("master", LedHandler.getInstance().getMaster());
         content.manipulate().variable("mute_status", LedHandler.getInstance().isMute() ? "danger" : "secondary");

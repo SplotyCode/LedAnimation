@@ -26,7 +26,7 @@ $("#master").on('input', function() {
         data: $(this.form).serialize()
     }).fail(function() {
         alertify.error("Failed to set master");
-    });;
+    });
 });
 $(".scene-form").each(function(){
     $(this).on('submit', function(e) {

@@ -13,6 +13,22 @@ function is_touch_device() {
   var query = ['(', prefixes.join('touch-enabled),('), 'heartz', ')'].join('');
   return mq(query);
 }
+function isEmpty(str) {
+      return (!str || 0 === str.length);
+}
+(function($) {
+    $.fn.changeElementType = function(newType) {
+        var attrs = {};
+
+        $.each(this[0].attributes, function(idx, attr) {
+            attrs[attr.nodeName] = attr.nodeValue;
+        });
+
+        this.replaceWith(function() {
+            return $("<" + newType + "/>", attrs).append($(this).contents());
+        });
+    }
+})(jQuery);
 $(function () {
   $('[data-toggle="tooltip"]').tooltip();
 })

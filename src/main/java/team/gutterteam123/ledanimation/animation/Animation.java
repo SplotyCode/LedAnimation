@@ -15,8 +15,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@Getter @Setter
 @EqualsAndHashCode
+/* max playtime  27.3058333333 mins */
+/* (2^15-1) * (1/20) / 60 */
 public class Animation implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -25,10 +26,24 @@ public class Animation implements Serializable {
 
     private int end;
 
-    private String name;
-    private Map<String, KeyFrame> keyFrames = new HashMap<>();
+    @Getter private String name;
+    @Getter private ArrayList<KeyFrame> keyFrames = new ArrayList<>();
 
     public Animation(String name) {
         this.name = name;
+    }
+
+    public int getEnd() {
+        if (end == 0 && !keyFrames.isEmpty()) {
+            computeEnd();
+        }
+        return end;
+    }
+
+    public void computeEnd() {
+        end = 0;
+        for (KeyFrame frame : keyFrames) {
+            end = Math.max(end, frame.getEnd());
+        }
     }
 }
