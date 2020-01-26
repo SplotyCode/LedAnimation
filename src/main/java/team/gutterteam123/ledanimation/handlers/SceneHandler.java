@@ -47,17 +47,15 @@ public class SceneHandler {
     }
 
     @Mapping("scenes/create")
-    public void create(@RequiredGet("name") String name, Response response) {
+    public void create(@RequiredGet("name") String name) {
         Scene.FILE_SYSTEM.putEntry(name, Scene.saveCurrent(name));
-        response.redirect("/scene", false);
     }
 
     @Mapping("scenes/visible")
-    public void visible(@RequiredGet("name") String name, Response response) {
+    public void visible(@RequiredGet("name") String name) {
         Scene scene = Scene.FILE_SYSTEM.getEntry(name);
         scene.setVisible(!scene.isVisible());
         Scene.FILE_SYSTEM.putEntry(name, scene);
-        response.redirect("/scene", false);
     }
 
 }
