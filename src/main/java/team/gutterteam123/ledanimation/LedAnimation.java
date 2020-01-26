@@ -4,6 +4,8 @@ import io.github.splotycode.mosaik.runtime.LinkBase;
 import io.github.splotycode.mosaik.runtime.application.Application;
 import io.github.splotycode.mosaik.runtime.pathmanager.PathManager;
 import io.github.splotycode.mosaik.runtime.startup.BootContext;
+import io.github.splotycode.mosaik.util.NetworkUtil;
+import io.github.splotycode.mosaik.util.logger.Logger;
 import io.github.splotycode.mosaik.valuetransformer.TransformerManager;
 import io.github.splotycode.mosaik.webapi.WebApplicationType;
 import io.github.splotycode.mosaik.webapi.config.WebConfig;
@@ -20,6 +22,7 @@ import team.gutterteam123.ledanimation.devices.Controllable;
 import team.gutterteam123.ledanimation.handlers.ErrorFactory;
 import team.gutterteam123.ledanimation.handlers.RoutingHandler;
 import team.gutterteam123.ledanimation.server.ChannelInitializer;
+import team.gutterteam123.ledanimation.sound.SoundToLight;
 import team.gutterteam123.ledanimation.user.Account;
 import team.gutterteam123.ledanimation.user.LedSession;
 import team.gutterteam123.ledanimation.user.PasswordCryptor;
@@ -29,7 +32,22 @@ import java.io.File;
 @Getter
 public class LedAnimation extends Application implements WebApplicationType {
 
-    public static final File WEB_PATH = false ? new File("web") : new File(PathManager.getInstance().getMainDirectory(), "web/");
+    private static final Logger LOGGER = Logger.getInstance(LedAnimation.class);
+
+    public static final File WEB_PATH;
+
+    static {
+        File path = new File("web");
+        try {
+            if (path.exists()) {
+                LOGGER.info("Using Debug Web Resources from " + path.getAbsolutePath());
+            } else if (!(path = new File(PathManager.getInstance().getMainDirectory(), "web/")).exists()) {
+                throw new IllegalStateException("Could not get find web assets! Tried web/ and " + path.getAbsolutePath());
+            }
+        } finally {
+            WEB_PATH = path;
+        }
+    }
 
     public static LedAnimation getInstance() {
         return LinkBase.getApplicationManager().getApplicationByClass(LedAnimation.class);
@@ -43,6 +61,9 @@ public class LedAnimation extends Application implements WebApplicationType {
     ) {
         @Override
         public boolean hasPermission(Request request, String permission) {
+            if (NetworkUtil.isLocalAddress(request.getIpAddress())) {
+                return true;
+            }
             boolean result = super.hasPermission(request, permission);
             if (!result) {
                 request.getResponse().redirect("/login?last=" + URLEncode.encode(request.getFullUrl()), false);
@@ -57,6 +78,7 @@ public class LedAnimation extends Application implements WebApplicationType {
 
         configureWebServer();
         listen(5555, false);
+        //new SoundToLight(16);
     }
 
     private void configureWebServer() {
