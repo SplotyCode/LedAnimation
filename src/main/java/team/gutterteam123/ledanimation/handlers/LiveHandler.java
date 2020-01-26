@@ -99,7 +99,7 @@ public class LiveHandler {
 
     @Mapping("liveaction/toggleautocommit")
     public void toggleAutoCommit(Response response) {
-        LedHandler.getInstance().toogleAutoCimmit();
+        LedHandler.getInstance().toggleAutoCommit();
         response.redirect("/live", false);
     }
 

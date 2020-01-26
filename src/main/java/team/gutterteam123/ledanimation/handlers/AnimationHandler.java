@@ -89,6 +89,6 @@ public class AnimationHandler {
     @Mapping("animations/delete")
     public void delete(Response response, @RequiredGet("name") String name) {
         Animation.FILE_SYSTEM.deleteEntry(name);
-        response.redirect("/animation" + name, false);
+        response.redirect("/animation", false);
     }
 }
