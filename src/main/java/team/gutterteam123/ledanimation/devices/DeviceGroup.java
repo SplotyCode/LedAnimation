@@ -17,7 +17,7 @@ public class DeviceGroup implements Controllable, EntryListener {
 
     private static final long serialVersionUID = 1L;
 
-    @Getter private transient Collection<Device> devices;
+    @Getter protected transient Collection<Device> devices;
     @Getter private Collection<String> rawDevices = new ArrayList<>();
 
     private String name;
@@ -38,7 +38,7 @@ public class DeviceGroup implements Controllable, EntryListener {
     @Override
     public void setChannel(ChannelHandlerContext ctx, ChannelType channel, short value) {
         boolean wasSave = isSave(channel);
-        for (Device child : getDevices0()) {
+        for (Device child : devices) {
             if (child.supportsOperation(channel)) {
                 child.setChannel(null, channel, value);
             }
@@ -52,7 +52,10 @@ public class DeviceGroup implements Controllable, EntryListener {
 
     private boolean isSave(ChannelType type) {
         short current = -1;
-        for (Device child : getDevices0()) {
+        for (Device child : devices) {
+            if (!child.supportsOperation(type)) {
+                continue;
+            }
             short val = child.getValue(type).getValue();
             if (current == -1) {
                 current = val;
@@ -61,10 +64,6 @@ public class DeviceGroup implements Controllable, EntryListener {
             }
         }
         return true;
-    }
-
-    protected Collection<Device> getDevices0() {
-        return devices;
     }
 
     public void registerDevice(Device device) {
@@ -80,7 +79,7 @@ public class DeviceGroup implements Controllable, EntryListener {
     @Override
     public Collection<ChannelType> getChannels() {
         Set<ChannelType> channels = new HashSet<>();
-        for (Device child : getDevices0()) {
+        for (Device child : devices) {
             channels.addAll(child.getChannels());
         }
         return channels;
@@ -96,7 +95,10 @@ public class DeviceGroup implements Controllable, EntryListener {
         short current = -1;
         boolean save = true;
 
-        for (Device child : getDevices0()) {
+        for (Device child : devices) {
+            if (!child.supportsOperation(type)) {
+                continue;
+            }
             short val = child.getValue(type).getValue();
             if (current == -1) {
                 current = val;
@@ -108,8 +110,11 @@ public class DeviceGroup implements Controllable, EntryListener {
 
         if (!save) {
             int sum = 0;
-            for (Device child : getDevices0()) {
-                sum += child.getValue(type).getValue();
+
+            for (Device child : devices) {
+                if (child.supportsOperation(type)) {
+                    sum += child.getValue(type).getValue();
+                }
             }
             current = (short) (sum / devices.size());
         }
