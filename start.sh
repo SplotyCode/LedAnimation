@@ -40,7 +40,7 @@ elif [[ ${latest} != ${current} ]]; then
         echo "Download failed"
         exit 1
     fi
-    echo ${latest} >> ${txt}
+    echo ${latest} > ${txt}
 
     rm -fv "${folder}/app.jar"
     rm -rfv "${folder}/bin/"
@@ -53,4 +53,11 @@ elif [[ ${latest} != ${current} ]]; then
     echo "Successfully installed version ${latest}"
 fi
 echo "Starting Java Application"
-java -Dmosaik.appname="LedAnimation" -jar "${folder}/app.jar"
+
+code=-1
+while [[ ${code} == "-1" || ${code} == "101" ]]
+    do
+        env "mosaik.appname=LedAnimation" java -Dmosaik.appname="LedAnimation" -jar "${folder}/app.jar"
+        code = $?
+        echo "Restating now..."
+    done

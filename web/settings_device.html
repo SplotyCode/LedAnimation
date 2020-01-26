@@ -1,35 +1,3 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>$device$ | Settings</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="/static/3party/fa/css/all.css">
-    <link rel="stylesheet" href="/static/3party/bootstrap/css/bootstrap.min.css">
-    <link rel="stylesheet" href="/static/3party/datatable.css">
-    <link rel="stylesheet" href="/static/3party/datatable_bootstrap.css">
-</head>
-<body class="text-center">
-<nav class="navbar navbar-expand-md navbar-dark bg-dark sticky-top">
-    <a class="navbar-brand" href="/">LedAnimation</a>
-    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault" aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-    </button>
-
-    <div class="collapse navbar-collapse" id="navbarsExampleDefault">
-        <ul class="navbar-nav mr-auto">
-            <li class="nav-item active">
-                <a class="nav-link" href="/device">Devices <span class="sr-only">(current)</span></a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="/live">Live</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="/animation">Animation</a>
-            </li>
-        </ul>
-    </div>
-</nav>
 <main role="main" class="container">
     <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
         <h1 class="h2">Devices</h1>
@@ -47,42 +15,38 @@
         <tr>
             <th scope="row">$type$</th>
             <td>
-                <form class="form-inline justify-content-center" method="get" action="/devices/editchannel">
+                <form class="form-inline justify-content-center silent-form" method="get" action="/devices/editchannel" data-action="changed channel value" data-onSuccess="var field = element.find('.editchannel');field.attr('data-originalvalue', field.val());element.find('.save-button').hide()">
                     <input type="hidden" value="$type$" name="type">
                     <input type="hidden" value="$device$" name="device">
-                    <input data-originalvalue="$channel$" value="$channel$" class="form-control editchannel" name="channel" type="number" placeholder="channel">
+                    <input data-originalvalue="$channel$" value="$channel$" class="form-control editchannel" name="channel" type="number" placeholder="channel" required>
                     <button type="submit" class="btn btn-info save-button" style="display: none"><i class="fas fa-pencil-alt"></i></button>
                 </form>
             </td>
             <td>
-                <a role="button" type="button" class="btn btn-danger" href="/devices/deletechannel?device=$device$&type=$type$"><i class="fa fa-trash"></i></a>
+                <a role="button" type="button" class="btn btn-danger silent-url" href="/devices/deletechannel?device=$device$&type=$type$" data-action="deleted channel link" data-onSuccess="types.append(new Option(element.rowName()));element.removeRow();sortTypes();"><i class="fa fa-trash"></i></a>
             </td>
         </tr>
         $@@$
         <tr>
             <td>
-                <form id="form" method="get" action="/devices/addchannel">
-                    <select class="form-control" name="type">
+                <form id="form" method="get" action="/devices/addchannel" class="silent-form" data-action="added channel link" data-onSuccess="reloadSettings()">
+                    <select class="form-control" name="type" id="types" required>
                         $@channels$
                         <option>$dname$</option>
                         $@@$
                     </select>
                 </form>
             </td>
-            <td><input form="form" class="form-control" name="channel" placeholder="channel" type="number"></td>
+            <td><input form="form" class="form-control" name="channel" placeholder="channel" type="number" required></td>
             <td><button form="form" type="submit" class="btn btn-success">Add</button><input form="form" type="hidden" name="device" value="$device$"></td>
         </tr>
         </tbody>
     </table>
 </main>
-<script src="/static/3party/jquery.js"></script>
-<script src="/static/3party/bootstrap/js/bootstrap.min.js"></script>
-<script src="/static/3party/datatables.js"></script>
-<script src="/static/3party/datatable_bootstrap.js"></script>
 <script>
+    var types = $('#types');
     $(".editchannel").each(function(){
         $(this).on('change paste keyup', function() {
-            console.log($(this).val() + " " + $(this).attr("data-originalvalue"));
             var changed = $(this).val() != $(this).attr("data-originalvalue");
             if (changed) {
                 $(this).next().filter('.save-button').show();
@@ -91,6 +55,16 @@
             }
         });
     });
+    function sortTypes() {
+        var options = $("#types option");
+        var arr = options.map(function(_, o) { return { t: $(o).text(), v: o.value }; }).get();
+        arr.sort(function(o1, o2) { return o1.t > o2.t ? 1 : o1.t < o2.t ? -1 : 0; });
+        options.each(function(i, o) {
+            o.value = arr[i].v;
+            $(o).text(arr[i].t);
+        })
+    }
+    $(document).ready(function() {
+        sortTypes();
+    });
 </script>
-</body>
-</html>

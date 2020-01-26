@@ -7,6 +7,7 @@ import lombok.Setter;
 import team.gutterteam123.ledanimation.server.WebSocketHandler;
 
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -57,6 +58,20 @@ public class Device implements Controllable {
     @Override
     public String displayName() {
         return name;
+    }
+
+    public Device duplicate(String name, short base) {
+        int baseDiff = base - getBase();
+
+        Device newDevice = new Device(name);
+        for (Map.Entry<ChannelType, Integer> channel : channels.entrySet()) {
+            newDevice.channels.put(channel.getKey(), channel.getValue() + baseDiff);
+        }
+        return newDevice;
+    }
+
+    public int getBase() {
+        return channels.values().stream().min(Comparator.comparingInt(value -> value)).orElse(-1);
     }
 
     @Override

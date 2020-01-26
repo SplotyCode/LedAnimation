@@ -1,23 +1,24 @@
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
     <h1 class="h1" style="padding-top:12px">Devices</h1>
 </div>
-<table id="devices" class="table table-dark table-striped table-hover dataTable">
+<table class="table table-dark table-striped table-hover dataTable data-table-auto-load">
     <thead>
     <tr>
-        <th scope="col">Type</th>
         <th scope="col">Name</th>
+        <th scope="col">Type</th>
         <th scope="col">Actions</th>
     </tr>
     </thead>
     <tbody>
     $@devices$
     <tr>
-        <th scope="row">$type$</th>
-        <td>$name$</td>
+        <th scope="row">$name$</th>
+        <td class="type">$type$</td>
         <td>
-            <a role="button" type="button" href="/devices/visible?name=$name$" class="btn btn-$visible-status$"> <i class="fa fa-eye$eye$"></i></a>
-            <a role="button" type="button" class="btn btn-info" href="/devices/settings?name=$name$"> <i class="fa fa-cog"></i></a>
-            <a role="button" type="button" class="btn btn-danger" href="/devices/delete?name=$name$"><i class="fa fa-trash"></i></a>
+            <a role="button" type="button" href="/devices/visible?name=$name$" class="silent-url btn btn-$visible-status$" data-action="toggled visibility" data-onSuccess="reloadContent();"> <i class="fa fa-eye$eye$"></i></a>
+            <button class="btn btn-warning text-white" data-toggle="modal" data-target="#duplicateModal"> <i class="fa fa-copy"></i></button>
+            <button class="btn btn-info" data-toggle="modal" data-target="#settingsModal"> <i class="fa fa-cog"></i></button>
+            <a role="button" type="button" class="btn btn-danger silent-url" href="/devices/delete?name=$name$" data-action="deleted device" data-onSuccess="element.removeRow()"><i class="fa fa-trash"></i></a>
         </td>
     </tr>
     $@@$
@@ -27,10 +28,10 @@
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
     <h1 class="h2">Create new Device</h1>
 </div>
-<form method="get" action="/devices/create" class="form-inline justify-content-center">
+<form method="get" id="deviceForm" action="/devices/create" data-action="created new device" class="form-inline justify-content-center silent-form" data-onSuccess="reloadContent();">
     <div class="form-group mb-2">
         <label for="name" class="sr-only">Name</label>
-        <input class="form-control" name="name" placeholder="Device Name" id="name">
+        <input class="form-control" name="name" placeholder="Device Name" id="name" required>
     </div>
     <div class="form-group mx-sm-3 mb-2">
         <label for="type" class="sr-only">Type</label>
@@ -41,8 +42,101 @@
     </div>
     <button type="submit" class="btn btn-success mb-2">Add</button>
 </form>
+
+<div class="modal fade" id="duplicateModal" tabindex="-1" role="dialog" aria-labelledby="DuplicateModal" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Duplicate Device</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form id="duplicateForm" action="/devices/duplicate" class="silent-form" data-action="duplicated device" data-onSuccess="duplicateModal.modal('hide');reloadContent();">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="newName" class="col-form-label">New Name:</label>
+                        <input type="text" class="form-control" name="newName" id="newName" required>
+                    </div>
+                    <div class="form-group" id="baseChannel">
+                        <label for="startChannel" class="col-form-label">Start Channel:</label>
+                        <input type="number" class="form-control" name="startChannel" id="startChannel" required>
+                    </div>
+                    <input type="hidden" name="clonedName">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Create Duplicate</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="settingsModal" tabindex="-1" role="dialog" aria-labelledby="SettingModal" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Device Settings</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" id="settingsBody"></div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
 <script>
-    $(document).ready(function() {
-        $('#devices').DataTable();
-    } );
+    var duplicateModal = $("#duplicateModal");
+    var settingsModal = $("#settingsModal");
+
+    var settings = $("#settingsBody");
+    var animating = false;
+    var text;
+    
+    duplicateModal.on("show.bs.modal", function(event) {
+        var button = $(event.relatedTarget)
+        var name = button.rowName();
+        var type = button.closest("tr").find(".type").text();
+        $(this).find(".modal-body input[type=hidden]").val(name);
+
+        if (type == "Device") {
+            $("#baseChannel").show();
+            $("#startChannel").attr("required", true);
+        } else {
+            $("#baseChannel").hide();
+            $("#startChannel").attr("required", false);
+        }
+        $("#startChannel").val(1);
+    });
+    settingsModal.on("show.bs.modal", function(event) {
+        settings.text("Loading Device Settings...");
+        var name = $(event.relatedTarget).rowName();
+        animating = true;
+        loadSettings(name);
+    });
+    settingsModal.on("shown.bs.modal", function(event) {
+        animating = false;
+        if (text != undefined) {
+            settings.html(text);
+        }
+    });
+
+    var settingsDevice;
+    function loadSettings(name) {
+        settingsDevice = name;
+        loadText("/devices/settings?name=" + encodeURIComponent(name), function(text, response) {
+            if (animating) {
+                this.text = text;
+            } else {
+                settings.html(text);
+            }
+        });
+    }
+    function reloadSettings() {
+        loadSettings(settingsDevice);
+    }
 </script>

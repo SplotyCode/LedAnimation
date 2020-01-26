@@ -49,6 +49,15 @@ public interface Controllable extends Serializable, Comparable<Controllable> {
 
     ChannelValue getValue(ChannelType type);
 
+    default short getValue(ChannelType type, short def) {
+        try {
+            ChannelValue value = getValue(type);
+            return value == null ? def : value.getValue();
+        } catch (UnsupportedOperationException ex) {
+            return def;
+        }
+    }
+
     @Override
     default int compareTo(Controllable controllable) {
         int type = typeName().compareTo(controllable.typeName());
