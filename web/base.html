@@ -1,14 +1,31 @@
 <!DOCTYPE html>
+<!--LOGIN-->
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>LedAnimation</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="shortcut icon" type="image/png" href="/static/favicon.png">
+
     <link rel="stylesheet" href="/static/3party/fa/css/all.css">
     <link rel="stylesheet" href="/static/3party/bootstrap/css/bootstrap.min.css">
     <link rel="stylesheet" href="/static/3party/datatable.css">
     <link rel="stylesheet" href="/static/3party/datatable_bootstrap.css">
     <link rel="stylesheet" href="/static/3party/notify.css">
+    <link rel="stylesheet" href="/static/loader.css">
+
+    <style>
+        * {
+            font-family: Arial, Helvetica, sans-serif;
+        }
+        .hoverfix li:hover .dropdown-menu {
+            display: block;
+        }
+        /* rotate caret on hover */
+        .hoverfix > li > a:hover:after {
+            text-decoration: underline;
+        } 
+    </style>
 </head>
 <body class="text-center">
     <nav class="navbar navbar-expand-md navbar-dark bg-dark sticky-top">
@@ -18,7 +35,7 @@
         </button>
 
         <div class="collapse navbar-collapse" id="navbar">
-            <ul class="navbar-nav mr-auto">
+            <ul class="navbar-nav mr-auto hoverfix">
                 <li class="nav-item device">
                     <a class="nav-link" href="/device" onclick="return onNav('device');">Devices</a>
                 </li>
@@ -32,17 +49,37 @@
                     <a class="nav-link" href="/scene" onclick="return onNav('scene');">Scenes</a>
                 </li>
                 <li class="nav-item user">
-                    <a class="nav-link" href="/scene" onclick="return onNav('user');">Users</a>
+                    <a class="nav-link" href="/user" onclick="return onNav('user');">Users</a>
                 </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Tools</a>
+                    <div class="dropdown-menu hoverfix">
+                      <a class="dropdown-item silent-url" data-action="simulate lag" href="/tool/lag">Simulate Lag</a>
+                      <a class="dropdown-item silent-url" data-action="pinged host" href="/miscellaneous/ping">Ping</a>
+                    </div>
+                  </li>
             </ul>
             <div class="nav navbar-right">
-                <div class="dropdown">
-                    <button class="btn btn-secondary btn-sm dropdown-toggle" id="profile" data-toggle="dropdown" aria-haspopup="true"
-                       aria-expanded="false">
-                        $user$
-                    </button>
-                    <div class="dropdown-menu dropdown-menu-right" aria-labelledby="profile">
-                        <a class="dropdown-item" href="/logout">Log Out</a>
+                <div class="btn-group">
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-info" onclick="reloadContent()"><i class="fas fa-sync"></i></button>
+                        <button type="button" class="btn btn-info dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <span class="sr-only">Toggle Dropdown</span>
+                        </button>
+                        <div class="dropdown-menu">
+                            <button class="dropdown-item silent-url" data-href="/miscellaneous/restartOla" data-action="connected to OLA">Reconnect Ola</button>
+                            <button class="dropdown-item" onclick="reconnectSocket()">Reconnect WebSocket</button>
+                            <div class="dropdown-divider"></div>
+                            <button class="dropdown-item silent-url" id="restartButton" data-action="initialized Application Restart..." data-href="/miscellaneous/restart">Restart LedAnimation</button>
+                        </div>
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn btn-secondary btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                $user$
+                        </button>
+                        <div class="dropdown-menu">
+                            <a class="dropdown-item" href="/logout">Log Out</a>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -57,9 +94,22 @@
     <script src="/static/3party/notify.js"></script>
     <script src="/static/3party/datatables.js"></script>
     <script src="/static/3party/datatable_bootstrap.js"></script>
-    <script src="/static/util.js"></script>
+
+    <script src="/static/mosaik/util.js"></script>
+    <script src="/static/mosaik/modal.js"></script>
+    <script src="/static/mosaik/tooltiploader.js"></script>
+    <script src="/static/mosaik/datatableutil.js"></script>
+    <script src="/static/mosaik/connector.js"></script>
+
+    <script src="/static/loader.js"></script>
     <script type="text/javascript">
+        supportsLoader = true;
+
+        var currentURL;
+        var socket;
+
         function loadPage(url) {
+            currentURL = url;
             console.log("Loading Page " + url);
             window.document.title = url.charAt(0).toUpperCase() + url.slice(1) + " | LedAnimation";
             history.pushState({current_page:url, previous_page:window.location.href.split('/').pop()}, window.document.title, url);
@@ -72,26 +122,85 @@
               cache: false,
               url: "/views/" + url,
               success: function(response) {
-                if (response.includes("<title>Login</title>")) {
+                if (response.startsWith(`<!DOCTYPE html>
+<!--LOGIN-->`)) {
                     window.location.reload(true);
                 } else {
-                    //$("#main").html(response);
-                    $("#main").changeElementType("iFrame");
-                    $('#main').contents().find('html').html(response);
+                    $("#main").html(response);
+                    reloadDataTables();
+
+                    
+                    /*$("#main").changeElementType("iFrame");
+                    var attrs = { };
+
+                    $.each($("#main")[0].attributes, function(idx, attr) {
+                        attrs[attr.nodeName] = attr.nodeValue;
+                    });
+
+
+                    $("#main").replaceWith(function () {
+                        return $("<iFrame>", attrs);
+                    });
+                    $('#main').attr("srcdoc", response);*/
                 }
               },
-              error: function(xhr, textStatus, errorThrown){
-                window.location.reload(true);
+              error: function(xhr, textStatus, errorThrown) {
+                $("#main").html("Content is not reachable");
+                alertify.error("Failed to load content " + createDebugButton(xhr, textStatus, errorThrown) + " " + "<a onclick='window.location.reload(true);'>Retry</a>");
               }
             });
         }
+
+        function reloadContent() {
+            loadPage(currentURL);
+        }
+
+        function reconnectSocket() {
+            if (socket != undefined) {
+                socket.close();
+            }
+            if (typeof connectToSocket === "function") {
+                connectToSocket();
+            } else {
+                alertify.warning("Site has no websocket");
+            }
+        }
+
         function onNav(url) {
             loadPage(url);
             return false;
         }
 
+        $("#restartButton").on("silentfinished", function(event, data) {
+            var online;
+            showLoader();
+            while(!online) {
+                $.ajax({
+                    url: "/miscellaneous/ping",
+                    success: function (result) {
+                        if (result.isOk) online = true;
+                    },
+                    async: false,
+                    timeout: 3000
+                });
+            }
+            reloadContent();
+            hideLoader();
+        });
+
         $(document).ready(function(){
-            alertify.set('notifier','position', 'bottom-right');
+            alertify.set('notifier', 'position', 'bottom-right');
+            setUpAlertifyErrorHandler();
+
+            const callback = function(mutationsList, observer) {
+                console.log("Detected dom change");
+                makeSilent(".silent-url");
+                makeFormSilent(".silent-form");
+                reloadToolTips();
+            };
+            new MutationObserver(callback).observe(document, { attributes: false, childList: true, subtree: true });
+
+
             loadPage(window.location.href.split('/').pop());
         });
     </script>
