@@ -1,12 +1,14 @@
 package team.gutterteam123.ledanimation.devices;
 
-import com.google.common.collect.Lists;
 import io.netty.channel.ChannelHandlerContext;
 import lombok.Getter;
 import lombok.Setter;
 import team.gutterteam123.ledanimation.server.WebSocketHandler;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 public class NeoPixelDevice implements Controllable {
 

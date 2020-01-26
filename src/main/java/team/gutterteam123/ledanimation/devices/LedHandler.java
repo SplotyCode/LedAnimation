@@ -4,34 +4,26 @@ import io.github.splotycode.mosaik.util.logger.Logger;
 import io.github.splotycode.mosaik.webapi.request.HandleRequestException;
 import lombok.Getter;
 import ola.OlaClient;
+import ola.rpc.StreamRpcChannel;
 
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class LedHandler {
 
-    @Getter private static LedHandler instance;
+    @Getter private static LedHandler instance = new LedHandler();
     private static Throwable loadError;
-
-    static {
-        try {
-            instance = new LedHandler();
-        } catch (Throwable e) {
-            loadError = e;
-        }
-    }
 
     private Logger logger = Logger.getInstance(getClass());
 
     private final DMXChannel[] dmxChannels = new DMXChannel[511];
-    private final OlaClient olaClient;
-    private Lock lock = new ReentrantLock();
+    private OlaClient olaClient;
+    private final Lock lock = new ReentrantLock();
     @Getter private short master;
     @Getter private boolean mute, autoCommit = true;
 
-    public LedHandler() throws Exception {
-        instance = this;
-        olaClient = new OlaClient();
+    public LedHandler() {
+        reConnect(false);
     }
 
     public void setChannelSilent(int channel, short value, boolean masterable) {
@@ -58,7 +50,7 @@ public class LedHandler {
         }
     }
 
-    public void toogleAutoCimmit() {
+    public void toggleAutoCommit() {
         lock.lock();
         try {
             autoCommit = !autoCommit;
@@ -96,7 +88,9 @@ public class LedHandler {
         if (loadError != null) {
             throw new HandleRequestException("Controller connection was not established", loadError);
         }
-        olaClient.sendDmx(1, getOutputDMX());
+        if (!olaClient.sendDmx(1, getOutputDMX())) {
+            throw new HandleRequestException("Failed to send DMX data");
+        }
     }
 
     public void setMaster(short master) {
@@ -104,6 +98,28 @@ public class LedHandler {
         try {
             this.master = master;
             refresh0();
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    public void reConnect(boolean fromRequest) {
+        lock.lock();
+        try {
+            if (olaClient != null) {
+                try {
+                    StreamRpcChannel channel = (StreamRpcChannel) OlaClient.class.getDeclaredField("channel").get(olaClient);
+                    channel.close();
+                } catch (Exception ex) {
+                    logger.warn("Failed to close rpc stream", ex);
+                }
+            }
+            olaClient = new OlaClient();
+        } catch (Exception ex) {
+            loadError = ex;
+            if (fromRequest) {
+                throw new HandleRequestException("Controller connection was not established", ex);
+            }
         } finally {
             lock.unlock();
         }
