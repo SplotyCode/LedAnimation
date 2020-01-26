@@ -216,7 +216,7 @@
 
 <footer class="fixed-bottom bg-dark">
     <button class="btn btn-primary float-right" onclick="save()">Save changes</button>
-    <button class="btn btn-secondary float-right">Cancel</button>
+    <a href="/animation"><button class="btn btn-secondary float-right">Cancel</button></a>
 </footer>
 <script src="/static/3party/jquery.js"></script>
 <script src="/static/3party/bootstrap/js/bootstrap.min.js"></script>
@@ -224,7 +224,7 @@
 <script src="/static/3party/datatable_bootstrap.js"></script>
 <script src="/static/3party/popper.js"></script>
 <script src="/static/3party/notify.js"></script>
-<script src="/static/util.js"></script>
+<script src="/static/mosaik/util.js"></script>
 
 <script>
     const FRAME_SIZE = 1 / 20;
@@ -274,24 +274,26 @@
         selected.effect = $("#animationEffect option:selected").text();
      });
 
-     function updateSelectInfo() {
+    function updateSelectInfo() {
         $("#animationStart").val(selected.start);
         $("#animationEnd").val(selected.end);
         $("#animationLayer").val(selected.layer);
-     }
+    }
+
+    function deSelect() {
+        $(".selected").removeClass("selected");
+        $("#sidebarcontainer").addClass("d-none");
+        selected = undefined;
+    }
 
     function select(animation) {
         console.log("Selected " + animation.name);
+        deSelect();
         selected = animation;
 
-        $(".selected").removeClass("selected");
         $(animation.dom).addClass("selected");
 
-        if (animation != undefined) {
-            $("#sidebarcontainer").removeClass("d-none");
-        } else {
-            $("#sidebarcontainer").addClass("d-none");
-        }
+        $("#sidebarcontainer").removeClass("d-none");
 
         $("#animationName").val(selected.name);
         $('#animationEffect option').filter(function() {return $(this).text() == animation.effect;}).prop('selected', true);
@@ -318,6 +320,13 @@
 
             dom.addEventListener("click", function (event) {
                 select(scope);
+            });
+            dom.addEventListener("contextmenu", function (event) {
+                event.preventDefault();
+                animations.splice(animations.indexOf(scope), 1);
+                deSelect();
+                dom.parentNode.removeChild(dom);
+                return false;
             });
 
             dom.addEventListener("mousedown", function (event) {
@@ -483,16 +492,17 @@
         });
     }
 
-    function replacer(key,value) {
-        if (key=="dom") return undefined;
+    function replacer(key, value) {
+        if (key == "dom") return undefined;
         else if (key=="nameDom") return undefined;
         else return value;
     }
 
     function load(content) {
-        console.log(content)
-        console.log(JSON.parse(content))
-        JSON.parse(content).forEach(function(animationObj) {
+        console.log(content);
+        var parsed = JSON.parse(content); 
+        console.log(parsed)
+        parsed.forEach(function(animationObj) {
             var animation = new Animation(animationObj.name, animationObj.start, animationObj.end, animationObj.layer);
             animation.effect = animationObj.effect;
             animation.playSceneScene = animationObj.playSceneScene;
