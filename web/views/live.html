@@ -2,20 +2,22 @@
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
     <h1 class="h1" style="padding-top:12px">Live</h1>
 </div>
-<div class="btn-toolbar mb-3" role="toolbar" aria-label="Toolbar with button groups">
+<div class="btn-toolbar mb-3" role="toolbar" aria-label="Main Toolbar">
     <form method="get" action="/liveaction/togglemute" id="togglemute"></form>
     <form method="get" action="/liveaction/toggleautocommit" id="toggleautocommit"></form>
     $@form_scene$
         <form method="get" action="/scenes/play" class="scene-form" id="sc_$name$"></form>
     $@@$
-    <div class="btn-group mr-2" role="group" aria-label="First group">
-        <button type="button" class="btn btn-secondary" id="toggle-drag-and-drop"><i class="fa fa-arrows-alt"></i></button>
-        <button type="submit" form="togglemute" class="btn btn-$mute_status$" id="toggle-mute"><i class="fa fa-$mute_icon$"></i></button>
-        <button type="submit" form="toggleautocommit" class="btn btn-$autocommit_status$" id="toggle-autocommit"><i class="fa fa-$autocommit_icon$"></i></button>
+    <div class="btn-group mr-2" role="group" aria-label="Control group">
+        <button type="button" class="btn btn-secondary" id="toggle-drag-and-drop" data-toggle="tooltip" title="Drag and Drop"><i class="fa fa-arrows-alt"></i></button>
+        <button type="submit" form="togglemute" class="btn btn-$mute_status$" id="toggle-mute" data-toggle="tooltip" title="Mute"><i class="fa fa-$mute_icon$"></i></button>
+        <button type="submit" form="toggleautocommit" class="btn btn-$autocommit_status$" id="toggle-autocommit" data-toggle="tooltip" title="AutoCommit"><i class="fa fa-$autocommit_icon$"></i></button>
+    </div>
+    <div class="btn-group mr-2" role="group" aria-label="Scene group">
         $@scene$
-            <input type="hidden" name="fromlive" value="1" form="sc_$name$">
-            <input type="hidden" value="$name$" name="name" form="sc_$name$">
-            <button form="sc_$name$" type="button" class="btn btn-secondary scene-play" data-toggle="tooltip" data-placement="bottom" title="$name$"><i class="fa fa-play"></i></button>
+        <input type="hidden" name="fromlive" value="1" form="sc_$name$">
+        <input type="hidden" value="$name$" name="name" form="sc_$name$">
+        <button form="sc_$name$" type="button" class="btn btn-secondary scene-play" data-toggle="tooltip" data-placement="bottom" title="$name$"><i class="fa fa-play"></i></button>
         $@@$
     </div>
     <form method="get" action="/liveaction/setmaster">
